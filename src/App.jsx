@@ -14,7 +14,10 @@ function App() {
   useEffect(() => {
 
     async function getProducts() {
-
+      if (query === '') {
+        setProducts([])
+        return
+      }
 
       try {
         const data = await fetchJson(`http://localhost:3333/products?search=${query}`)
