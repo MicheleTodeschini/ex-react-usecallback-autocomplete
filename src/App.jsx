@@ -1,7 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 
 function App() {
+
+  function debounce(callback, delay) {
+    let timer;
+    return (value) => {
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        callback(value)
+      }, delay)
+    }
+  }
 
   async function fetchJson(url) {
     const response = await fetch(url)
@@ -11,26 +21,30 @@ function App() {
   const [query, setQuery] = useState('')
   const [products, setProducts] = useState([])
 
-  useEffect(() => {
 
-    async function getProducts() {
-      if (query === '') {
-        setProducts([])
-        return
-      }
-
-      try {
-        const data = await fetchJson(`http://localhost:3333/products?search=${query}`)
-        console.log(data);
-
-        setProducts(data)
-      } catch (error) {
-        console.error('Non sono riuscito a recuperare i prodotti')
-      }
-
+  const eseguiFetch = debounce(async (query) => {
+    if (query === '') {
+      setProducts([])
+      return
     }
-    getProducts()
+    try {
+      const data = await fetchJson(`http://localhost:3333/products?search=${query}`)
+      console.log(query);
+
+      setProducts(data)
+    } catch (error) {
+      console.error('Non sono risucito a recuperare i prodotti')
+    }
+
+
+  }, 300)
+
+  const eseguiFetchCallback = useCallback(eseguiFetch, [])
+
+  useEffect(() => {
+    eseguiFetchCallback(query)
   }, [query])
+
 
 
   return (
@@ -57,3 +71,4 @@ function App() {
 }
 
 export default App
+
